@@ -2,6 +2,7 @@ import React from 'react'
 import CreateAgentSection from './CreateAgentSection'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MyAgents from './MyAgents'
+import Templates from './Templates'
 function AiAgentTab() {
     return (
         <div className='px-10 md:px-24 lg:px-32 mt-14 '>
@@ -11,7 +12,7 @@ function AiAgentTab() {
                     <TabsTrigger value="template">Templates</TabsTrigger>
                 </TabsList>
                 <TabsContent value="myagent"><MyAgents /></TabsContent>
-                <TabsContent value="template">Change your password here.</TabsContent>
+                <TabsContent value="template"><Templates /></TabsContent>
             </Tabs>
         </div>
     )

@@ -3,8 +3,6 @@ import React, { use, useCallback, useContext, useEffect, useState } from 'react'
 import Header from '../_components/Header'
 import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, MiniMap, Controls, Panel, OnSelectionChangeParams, useOnSelectionChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import StartNode from '../_customNodes/StartNode';
-import AgentNode from '../_customNodes/AgentNode';
 import AgentToolsPanel from '../_components/AgentToolsPanel';
 import { WorkflowContext } from '@/context/WorkflowContext';
 
@@ -15,25 +13,20 @@ import { Agent } from '@/types/AgentType';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { toast } from 'sonner';
-import EndNode from '../_customNodes/EndNode';
-import IfElseNode from '../_customNodes/IfElseNode';
-import WhileNode from '../_customNodes/WhileNode';
-import UserApprovalNode from '../_customNodes/UserApprovalNode';
-import ApiNode from '../_customNodes/ApiNode';
 import SettingPanel from '../_components/SettingPanel';
+import { nodeTypes } from '../_customNodes/nodeTypes';
 // const initialNodes = [
 
 // ];
 // const initialEdges = [{ id: 'n1-n2', source: 'n1', target: 'n2' }];
-export const nodeTypes = {
-    StartNode: StartNode,
-    AgentNode: AgentNode,
-    EndNode: EndNode,
-    IfElseNode:IfElseNode,
-    WhileNode:WhileNode,
-    UserApprovalNode:UserApprovalNode,
-    ApiNode:ApiNode
-};
+const DEFAULT_START_NODES = [
+    {
+        id: 'start',
+        type: 'StartNode',
+        position: { x: 0, y: 0 },
+        data: { label: 'Start' }
+    }
+];
 function AgentBuilder() {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
@@ -53,10 +46,22 @@ function AgentBuilder() {
     }
     useEffect(() => {
         if (agentDetail) {
-            setNodes(agentDetail.nodes || []);
-            setEdges(agentDetail.edges || []);
-            setAddedNodes(agentDetail.nodes || []);
-            setNodeEdges(agentDetail.edges || []);
+            const initialNodes = agentDetail.nodes?.length ? agentDetail.nodes : DEFAULT_START_NODES;
+            const initialEdges = agentDetail.edges || [];
+
+            setNodes(initialNodes);
+            setEdges(initialEdges);
+            setAddedNodes(initialNodes);
+            setNodeEdges(initialEdges);
+
+            // Backfill older agents that were created without default nodes.
+            if (!agentDetail.nodes?.length && agentDetail?._id) {
+                UpdateAgentDetail({
+                    id: agentDetail._id,
+                    nodes: DEFAULT_START_NODES,
+                    edges: initialEdges,
+                });
+            }
         }
     }, [agentDetail]);
     useEffect(() => {

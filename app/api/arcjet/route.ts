@@ -1,5 +1,4 @@
 import { aj } from "@/config/Arcjet";
-import arcjet, { tokenBucket } from "@arcjet/next";
 import { NextResponse } from "next/server";
 
 

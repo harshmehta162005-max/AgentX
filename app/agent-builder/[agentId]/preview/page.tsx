@@ -6,20 +6,23 @@ import { api } from '@/convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { Agent } from '@/types/AgentType';
 import { ReactFlow } from '@xyflow/react';
-import { nodeTypes } from '../page';
+import { nodeTypes } from '../../_customNodes/nodeTypes';
 import '@xyflow/react/dist/style.css';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { RefreshCcwIcon } from 'lucide-react';
 import ChatUi from './_components/ChatUi';
 import PublishCodeDialog from './_components/PublishCodeDialog';
+import { toast } from 'sonner';
 
 function PreviewAgent() {
     // 🧠 Store the agent detail fetched from Convex (nodes + edges)
     const [agentDetail, setAgentDetail] = useState<Agent>();
     const [flowConfig, setFlowConfig] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [publishing, setPublishing] = useState(false);
     const updateAgentToolConfig = useMutation(api.agent.UpdateAgentToolConfigs)
+    const publishAgent = useMutation(api.agent.PublishAgent)
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -168,12 +171,36 @@ function PreviewAgent() {
         GetAgentDetail();
         setLoading(false);
     }
-    const OnPublish = () => {
+    const OnCode = () => {
         setOpenDialog(true);
+    }
+    const OnPublish = async () => {
+        if (publishing) return;
+        if (!agentDetail?._id) return;
+        if (agentDetail.published) {
+            toast.info("Agent already published");
+            return;
+        }
+
+        try {
+            setPublishing(true);
+            await publishAgent({ id: agentDetail._id });
+            toast.success("Agent published successfully");
+            await GetAgentDetail();
+        } catch (error) {
+            toast.error("Failed to publish agent");
+        } finally {
+            setPublishing(false);
+        }
     }
     return (
         <div>
-            <Header previewHeader={true} agentDetail={agentDetail} onPublish={OnPublish} />
+            <Header
+                previewHeader={true}
+                agentDetail={agentDetail}
+                onPublish={OnPublish}
+                onCode={OnCode}
+            />
             <div className='grid grid-cols-4'>
                 <div className='col-span-3 p-5 border rounded-2xl m-5 '>
                     <h2>Preview</h2>
